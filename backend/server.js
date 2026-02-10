@@ -19,7 +19,7 @@ app.use(cors());
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
-// Routes
+// API Routes
 app.use('/api', soundsRouter);
 app.use('/api', detectionsRouter);
 app.use('/api', settingsRouter);
@@ -30,6 +30,18 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Serve frontend static files in production
+const frontendDist = path.join(__dirname, '..', 'frontend', 'dist');
+app.use(express.static(frontendDist));
+
+// SPA fallback — serve index.html for any non-API route
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api')) {
+    return res.status(404).json({ error: 'API route not found' });
+  }
+  res.sendFile(path.join(frontendDist, 'index.html'));
+});
+
 // Error handling
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -38,6 +50,5 @@ app.use((err, req, res, next) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 SonicSight API running on http://localhost:${PORT}`);
-  console.log(`📝 Endpoints available at http://localhost:${PORT}/api`);
+  console.log(`🚀 SonicSight API running on port ${PORT}`);
 });

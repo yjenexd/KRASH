@@ -1,6 +1,10 @@
 // Shared API configuration and utilities
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+// In production the frontend is served by the same Express server,
+// so we use a relative URL. During local dev we point to the backend port.
+const API_BASE_URL = import.meta.env.VITE_API_URL || (
+  import.meta.env.DEV ? 'http://localhost:5001/api' : '/api'
+);
 
 export async function apiCall(endpoint: string, options: RequestInit = {}) {
   const url = `${API_BASE_URL}${endpoint}`;
