@@ -1,0 +1,20 @@
+[
+  {
+    "id": "1770747291792",
+    "name": "Microwave detected",
+    "color": "#ef4444",
+    "timestamp": "2026-02-10T18:14:51.792Z"
+  },
+  {
+    "id": "1770747290054",
+    "name": "Doorbell detected",
+    "color": "#10b981",
+    "timestamp": "2026-02-10T18:14:50.054Z"
+  },
+  {
+    "id": "1770747290030",
+    "name": "Baby Crying detected",
+    "color": "#3b82f6",
+    "timestamp": "2026-02-10T18:14:50.030Z"
+  }
+]
