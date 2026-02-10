@@ -1,33 +1,34 @@
-import { useState } from 'react';
 import { Calendar, Filter } from 'lucide-react';
+import { useDetections } from '../../hooks/useDetections';
 import './History.css';
 
-interface HistoryItem {
+interface Detection {
   id: string;
   name: string;
   color: string;
   timestamp: string;
-  date: string;
 }
 
 export default function History() {
-  const [historyItems] = useState<HistoryItem[]>([
-    { id: '1', name: 'Baby Crying detected', color: '#3b82f6', timestamp: '10:32 AM', date: 'Today' },
-    { id: '2', name: 'Doorbell detected', color: '#f59e0b', timestamp: '9:15 AM', date: 'Today' },
-    { id: '3', name: 'Microwave detected', color: '#ef4444', timestamp: '8:45 AM', date: 'Today' },
-    { id: '4', name: 'Microwave detected', color: '#ef4444', timestamp: '6:30 PM', date: 'Yesterday' },
-    { id: '5', name: 'Baby Crying detected', color: '#3b82f6', timestamp: '2:15 PM', date: 'Yesterday' },
-    { id: '6', name: 'Doorbell detected', color: '#f59e0b', timestamp: '11:00 AM', date: 'Yesterday' },
-    { id: '7', name: 'Fire Alarm detected', color: '#22c55e', timestamp: '9:45 AM', date: '2 days ago' },
-  ]);
+  const { detections, loading, error } = useDetections();
 
-  const groupedHistory = historyItems.reduce((acc, item) => {
-    if (!acc[item.date]) {
-      acc[item.date] = [];
-    }
-    acc[item.date].push(item);
-    return acc;
-  }, {} as Record<string, HistoryItem[]>);
+  // Group detections by date
+  const groupByDate = (items: Detection[]) => {
+    return items.reduce((acc, item) => {
+      const date = new Date(item.timestamp).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+      if (!acc[date]) {
+        acc[date] = [];
+      }
+      acc[date].push(item);
+      return acc;
+    }, {} as Record<string, Detection[]>);
+  };
+
+  const groupedHistory = groupByDate(detections);
 
   return (
     <div className="history-page">
@@ -45,22 +46,42 @@ export default function History() {
         </div>
       </div>
 
-      <div className="history-list">
-        {Object.entries(groupedHistory).map(([date, items]) => (
-          <div key={date} className="history-group">
-            <h2 className="group-date">{date}</h2>
-            <div className="group-items">
-              {items.map((item) => (
-                <div key={item.id} className="history-item">
-                  <span className="item-dot" style={{ backgroundColor: item.color }} />
-                  <span className="item-name">{item.name}</span>
-                  <span className="item-time">{item.timestamp}</span>
-                </div>
-              ))}
+      {loading && (
+        <div className="history-state">
+          <p className="state-message">Loading detection history...</p>
+        </div>
+      )}
+
+      {error && (
+        <div className="history-state error">
+          <p className="state-message">Error loading history: {error}</p>
+        </div>
+      )}
+
+      {!loading && !error && detections.length === 0 && (
+        <div className="history-state empty">
+          <p className="state-message">No detections yet. Start recording to see history here.</p>
+        </div>
+      )}
+
+      {!loading && !error && detections.length > 0 && (
+        <div className="history-list">
+          {Object.entries(groupedHistory).map(([date, items]) => (
+            <div key={date} className="history-group">
+              <h2 className="group-date">{date}</h2>
+              <div className="group-items">
+                {items.map((item: Detection) => (
+                  <div key={item.id} className="history-item">
+                    <span className="item-dot" style={{ backgroundColor: item.color }} />
+                    <span className="item-name">{item.name}</span>
+                    <span className="item-time">{new Date(item.timestamp).toLocaleTimeString()}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
