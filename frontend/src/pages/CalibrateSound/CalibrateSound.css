@@ -103,6 +103,97 @@
   }
 }
 
+.record-button-label {
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  min-height: 24px;
+}
+
+.recording-label {
+  color: #ef4444;
+  animation: blink-red 1s ease-in-out infinite;
+  font-weight: 700;
+}
+
+.idle-label {
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+.saved-recording-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 2px solid rgba(34, 197, 94, 0.5);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.checkmark-icon {
+  font-size: 48px;
+  animation: pop-in 0.5s ease-out;
+}
+
+.saved-text {
+  color: #22c55e;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.recording-size {
+  color: #94a3b8;
+  font-size: 13px;
+  font-family: monospace;
+}
+
+.re-record-button {
+  padding: 8px 16px;
+  background: rgba(59, 130, 246, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.5);
+  border-radius: 6px;
+  color: #3b82f6;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.re-record-button:hover {
+  background: rgba(59, 130, 246, 0.3);
+  border-color: rgba(59, 130, 246, 0.7);
+}
+
+.re-record-button:active {
+  transform: scale(0.95);
+}
+
+@keyframes pop-in {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes blink-red {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
 .waveform {
   display: flex;
   align-items: center;

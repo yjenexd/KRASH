@@ -14,7 +14,7 @@ You're building the **Calibration** feature - recording audio, labeling it, assi
 1. Backend server should already be running
 2. Test your endpoint:
    ```bash
-   curl -X POST http://localhost:5000/api/audio \
+   curl -X POST http://localhost:5001/api/audio \
      -H "Content-Type: application/json" \
      -d '{
        "audioData": "data:audio/wav;base64,UklGRi4AAAASVA...",

@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Mic } from 'lucide-react';
+import { useAudioRecorder } from '../../hooks/useAudioRecorder';
+import { useSounds } from '../../hooks/useSounds';
+import { useDetections } from '../../hooks/useDetections';
+import { formatTime } from '../../utils/audioUtils';
 import './CalibrateSound.css';
 
 const PRESET_COLORS = [
@@ -13,26 +17,79 @@ const PRESET_COLORS = [
 
 export default function CalibrateSound() {
   const navigate = useNavigate();
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordingTime, setRecordingTime] = useState(5);
   const [soundLabel, setSoundLabel] = useState('');
   const [selectedColor, setSelectedColor] = useState(PRESET_COLORS[0]);
   const [showCustomColor, setShowCustomColor] = useState(false);
+  const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
+  
+  const { 
+    isRecording, 
+    recordingTime, 
+    startRecording, 
+    stopRecording, 
+    saveAudio 
+  } = useAudioRecorder();
+  const { addSound } = useSounds();
+  const { logDetection } = useDetections();
 
-  const handleStartRecording = () => {
-    setIsRecording(!isRecording);
+  const handleStartRecording = async () => {
+    try {
+      if (isRecording) {
+        console.log('🛑 STOP button clicked - stopping recording');
+        const blob = await stopRecording();
+        console.log('✅ Recording stopped. Blob:', blob?.size, 'bytes');
+        
+        if (blob && blob.size > 0) {
+          setRecordedBlob(blob);
+          console.log('💾 Recording saved to state. Ready for labeling.');
+        } else {
+          alert('⚠️ Recording was empty. Please try again.');
+          setRecordedBlob(null);
+        }
+      } else {
+        console.log('🎤 START button clicked - starting recording');
+        setRecordedBlob(null); // Clear previous recording when starting new one
+        await startRecording();
+        console.log('✅ Recording started');
+      }
+    } catch (error) {
+      console.error('❌ Error in handleStartRecording:', error);
+      alert('Error: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    }
   };
 
-  const handleSave = () => {
-    // Save logic here
-    console.log({ soundLabel, selectedColor, recordingTime });
-    navigate('/');
-  };
+  const handleSave = async () => {
+    if (!soundLabel || !selectedColor) {
+      alert('Please enter a sound name and select a color');
+      return;
+    }
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    if (!recordedBlob) {
+      alert('No audio recorded. Please record first.');
+      return;
+    }
+
+    try {
+      console.log('💾 Saving recording with label:', soundLabel, 'color:', selectedColor);
+      
+      // Save audio file to backend
+      await saveAudio(recordedBlob, `${soundLabel}.wav`);
+      console.log('✅ Audio uploaded to backend');
+
+      // Add sound to library
+      await addSound(soundLabel, selectedColor);
+      console.log('✅ Sound added to library');
+
+      // Log detection
+      await logDetection(soundLabel, selectedColor);
+      console.log('✅ Detection logged');
+
+      // Navigate back to home
+      navigate('/');
+    } catch (error) {
+      console.error('Failed to save sound:', error);
+      alert('Failed to save sound: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    }
   };
 
   return (
@@ -48,12 +105,38 @@ export default function CalibrateSound() {
         <section className="calibrate-section">
           <h2 className="section-title">1. Record Audio</h2>
           <div className="record-area">
-            <button
-              className={`record-button ${isRecording ? 'recording' : ''}`}
-              onClick={handleStartRecording}
-            >
-              <Mic size={32} />
-            </button>
+            {!recordedBlob ? (
+              <>
+                <button
+                  className={`record-button ${isRecording ? 'recording' : ''}`}
+                  onClick={handleStartRecording}
+                  title={isRecording ? 'Click to stop recording' : 'Click to start recording'}
+                  disabled={isRecording && recordedBlob !== null}
+                >
+                  <Mic size={32} />
+                </button>
+                
+                <div className="record-button-label">
+                  {isRecording ? (
+                    <span className="recording-label">🔴 RECORDING... Click to Stop</span>
+                  ) : (
+                    <span className="idle-label">▶️ Click to Record</span>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="saved-recording-message">
+                <div className="checkmark-icon">✅</div>
+                <div className="saved-text">Recording Saved</div>
+                <div className="recording-size">{(recordedBlob.size / 1024).toFixed(2)} KB</div>
+                <button 
+                  className="re-record-button"
+                  onClick={() => setRecordedBlob(null)}
+                >
+                  🔄 Re-record
+                </button>
+              </div>
+            )}
             
             <div className="waveform">
               {Array.from({ length: 40 }).map((_, i) => (

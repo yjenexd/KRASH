@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Mic } from 'lucide-react';
+import { useAudioRecorder } from '../hooks/useAudioRecorder';
+import { useSounds } from '../hooks/useSounds';
+import { useDetections } from '../hooks/useDetections';
+import { formatTime } from '../utils/audioUtils';
 import './CalibrateSound.css';
 
 const PRESET_COLORS = [
@@ -13,26 +17,57 @@ const PRESET_COLORS = [
 
 export default function CalibrateSound() {
   const navigate = useNavigate();
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordingTime, setRecordingTime] = useState(5);
   const [soundLabel, setSoundLabel] = useState('');
   const [selectedColor, setSelectedColor] = useState(PRESET_COLORS[0]);
   const [showCustomColor, setShowCustomColor] = useState(false);
+  
+  const { 
+    isRecording, 
+    startRecording, 
+    stopRecording, 
+    saveAudio 
+  } = useAudioRecorder();
+  const { addSound } = useSounds();
+  const { logDetection } = useDetections();
 
-  const handleStartRecording = () => {
-    setIsRecording(!isRecording);
+  const handleStartRecording = async () => {
+    if (isRecording) {
+      await stopRecording();
+      // Audio recorded successfully
+    } else {
+      await startRecording();
+    }
   };
 
-  const handleSave = () => {
-    // Save logic here
-    console.log({ soundLabel, selectedColor, recordingTime });
-    navigate('/');
-  };
+  const handleSave = async () => {
+    if (!soundLabel || !selectedColor) {
+      alert('Please enter a sound name and select a color');
+      return;
+    }
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    try {
+      // Get the recorded audio blob
+      const audioBlob = await stopRecording();
+      if (!audioBlob) {
+        alert('No audio recorded');
+        return;
+      }
+
+      // Save audio file to backend
+      await saveAudio(audioBlob, `${soundLabel}.wav`);
+
+      // Add sound to library
+      await addSound(soundLabel, selectedColor);
+
+      // Log detection
+      await logDetection(soundLabel, selectedColor);
+
+      // Navigate back to home
+      navigate('/');
+    } catch (error) {
+      console.error('Failed to save sound:', error);
+      alert('Failed to save sound');
+    }
   };
 
   return (
@@ -69,7 +104,7 @@ export default function CalibrateSound() {
             </div>
 
             <div className="recording-time">
-              <span className="current-time">{formatTime(recordingTime)}</span>
+              <span className="current-time">{formatTime(0)}</span>
               <span className="separator"> / </span>
               <span className="total-time">{formatTime(10)}</span>
             </div>

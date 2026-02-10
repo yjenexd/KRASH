@@ -113,3 +113,30 @@
   border-color: rgba(239, 68, 68, 0.3);
   color: #ef4444;
 }
+
+.loading-message {
+  text-align: center;
+  color: #64748b;
+  padding: 40px 20px;
+  font-size: 16px;
+}
+
+.error-message {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  padding: 16px;
+  color: #ef4444;
+  text-align: center;
+}
+
+.empty-message {
+  text-align: center;
+  color: #64748b;
+  padding: 60px 20px;
+}
+
+.empty-message p {
+  font-size: 16px;
+  margin: 0;
+}
