@@ -1,6 +1,5 @@
 [
   {
-
     "id": "1770749364367",
     "name": "mom detected",
     "color": "#3b82f6",
@@ -17,7 +16,8 @@
     "name": "ethan saying mommy  detected",
     "color": "#ca42f0",
     "timestamp": "2026-02-10T18:25:45.918Z"
-
+  },
+  {
     "id": "1770747291792",
     "name": "Microwave detected",
     "color": "#ef4444",
@@ -34,6 +34,5 @@
     "name": "Baby Crying detected",
     "color": "#3b82f6",
     "timestamp": "2026-02-10T18:14:50.030Z"
-
   }
 ]

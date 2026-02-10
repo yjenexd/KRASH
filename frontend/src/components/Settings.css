@@ -8,7 +8,7 @@
 }
 
 .settings-title {
-  color: #e2e8f0;
+  color: var(--text-primary);
   font-size: 24px;
   font-weight: 700;
 }
@@ -20,7 +20,7 @@
 }
 
 .section-title {
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-size: 14px;
   font-weight: 600;
   text-transform: uppercase;
@@ -28,10 +28,11 @@
 }
 
 .settings-list {
-  background: rgba(30, 41, 59, 0.5);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: var(--bg-card);
+  border: 1px solid var(--accent-border-strong);
   border-radius: 12px;
   overflow: hidden;
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .setting-item {
@@ -39,7 +40,7 @@
   align-items: center;
   gap: 16px;
   padding: 20px;
-  border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .setting-item:last-child {
@@ -52,15 +53,15 @@
 }
 
 .setting-item.clickable:hover {
-  background: rgba(59, 130, 246, 0.05);
+  background: var(--accent-hover);
 }
 
 .setting-icon {
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
+  background: var(--accent-light);
+  color: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -72,14 +73,14 @@
 }
 
 .setting-label {
-  color: #e2e8f0;
+  color: var(--text-primary);
   font-size: 15px;
   font-weight: 600;
   margin-bottom: 4px;
 }
 
 .setting-description {
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 13px;
 }
 
@@ -87,7 +88,7 @@
   width: 52px;
   height: 28px;
   border-radius: 14px;
-  background: #1e293b;
+  background: var(--toggle-bg);
   border: none;
   cursor: pointer;
   position: relative;
@@ -96,7 +97,7 @@
 }
 
 .toggle-button.active {
-  background: #3b82f6;
+  background: var(--accent);
 }
 
 .toggle-knob {
@@ -116,7 +117,7 @@
 
 .app-version {
   text-align: center;
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 13px;
   margin-top: auto;
   padding-top: 24px;

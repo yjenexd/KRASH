@@ -17,6 +17,7 @@ const defaultSettings = {
   hapticSync: true,
   notifications: true,
   soundAlerts: false,
+  darkMode: true,
 };
 
 // Initialize settings file if it doesn't exist
