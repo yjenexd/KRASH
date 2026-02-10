@@ -6,6 +6,7 @@ interface Settings {
   hapticSync: boolean;
   notifications: boolean;
   soundAlerts: boolean;
+  darkMode: boolean;
 }
 
 const defaultSettings: Settings = {
@@ -13,6 +14,7 @@ const defaultSettings: Settings = {
   hapticSync: true,
   notifications: true,
   soundAlerts: false,
+  darkMode: true,
 };
 
 export function useSettings() {

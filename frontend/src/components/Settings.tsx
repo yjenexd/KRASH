@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Bell, Vibrate, Moon, Volume2, Shield, HelpCircle } from 'lucide-react';
+import { useSettings } from '../hooks/useSettings';
 import './Settings.css';
 
 interface SettingToggle {
@@ -11,51 +12,79 @@ interface SettingToggle {
 }
 
 export default function Settings() {
-  const [settings, setSettings] = useState<SettingToggle[]>([
+  const { settings: apiSettings, loading, error, updateSettings } = useSettings();
+
+  const buildUiSettings = (): SettingToggle[] => [
     {
       id: 'notifications',
       label: 'Push Notifications',
       description: 'Receive alerts when sounds are detected',
       icon: <Bell size={20} />,
-      enabled: true,
+      enabled: apiSettings.notifications,
     },
     {
       id: 'haptic',
       label: 'Haptic Feedback',
       description: 'Vibrate device on sound detection',
       icon: <Vibrate size={20} />,
-      enabled: true,
+      enabled: apiSettings.hapticSync,
     },
     {
       id: 'darkMode',
       label: 'Dark Mode',
       description: 'Use dark theme throughout the app',
       icon: <Moon size={20} />,
-      enabled: true,
+      enabled: apiSettings.darkMode,
     },
     {
       id: 'soundAlerts',
       label: 'Sound Alerts',
       description: 'Play audio alerts on detection',
       icon: <Volume2 size={20} />,
-      enabled: false,
+      enabled: apiSettings.soundAlerts,
     },
-  ]);
+  ];
 
-  const toggleSetting = (id: string) => {
-    setSettings(settings.map(s => 
+  const [uiSettings, setUiSettings] = useState<SettingToggle[]>(buildUiSettings());
+
+  // Sync UI state when API settings load/change
+  useEffect(() => {
+    setUiSettings(buildUiSettings());
+  }, [apiSettings]);
+
+  // Apply dark/light theme to the document
+  useEffect(() => {
+    const isDark = apiSettings.darkMode;
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  }, [apiSettings.darkMode]);
+
+  const toggleSetting = async (id: string) => {
+    const updatedSettings = uiSettings.map(s =>
       s.id === id ? { ...s, enabled: !s.enabled } : s
-    ));
+    );
+    setUiSettings(updatedSettings);
+
+    // Map UI ids back to API field names and persist
+    await updateSettings({
+      notifications: updatedSettings.find(s => s.id === 'notifications')?.enabled,
+      hapticSync: updatedSettings.find(s => s.id === 'haptic')?.enabled,
+      soundAlerts: updatedSettings.find(s => s.id === 'soundAlerts')?.enabled,
+      darkMode: updatedSettings.find(s => s.id === 'darkMode')?.enabled,
+    });
   };
 
   return (
     <div className="settings-page">
       <h1 className="settings-title">Settings</h1>
 
+      {loading && <p className="settings-loading">Loading settings...</p>}
+      {error && <p className="settings-error">{error}</p>}
+
       <section className="settings-section">
         <h2 className="section-title">Preferences</h2>
         <div className="settings-list">
-          {settings.map((setting) => (
+          {uiSettings.map((setting) => (
             <div key={setting.id} className="setting-item">
               <div className="setting-icon">{setting.icon}</div>
               <div className="setting-info">
