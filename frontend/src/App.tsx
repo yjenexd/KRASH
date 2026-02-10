@@ -1,10 +1,10 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
-import Visualizer from './components/Visualizer';
-import CalibrateSound from './components/CalibrateSound';
-import SoundLibrary from './components/SoundLibrary';
-import History from './components/History';
-import Settings from './components/Settings';
+import Visualizer from './pages/Visualizer/Visualizer';
+import CalibrateSound from './pages/CalibrateSound/CalibrateSound';
+import SoundLibrary from './pages/SoundLibrary/SoundLibrary';
+import History from './pages/History/History';
+import Settings from './pages/Settings/Settings';
 import './App.css';
 
 function App() {
