@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KRASH - Audio Visualizer for Deaf People</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>KRASH Audio Visualizer</h1>
+            <p class="subtitle">Visual Audio Feedback for the Deaf Community</p>
+        </header>
+
+        <main>
+            <div class="control-panel">
+                <button id="startBtn" class="btn btn-primary">Start Listening</button>
+                <button id="stopBtn" class="btn btn-secondary" disabled>Stop Listening</button>
+            </div>
+
+            <div class="status-indicator">
+                <p id="statusText">Click "Start Listening" to begin</p>
+            </div>
+
+            <div class="visualizer-container">
+                <canvas id="visualizer"></canvas>
+                <div class="level-indicator">
+                    <div class="level-bar">
+                        <div id="levelFill" class="level-fill"></div>
+                    </div>
+                    <p id="levelText" class="level-text">Volume: 0%</p>
+                </div>
+            </div>
+
+            <div class="alert-container">
+                <div id="alertBox" class="alert-box">
+                    <span id="alertIcon">🔊</span>
+                    <span id="alertText">Listening for sounds...</span>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h2>How It Works</h2>
+                <ul>
+                    <li><strong>Visual Waveform:</strong> See sound waves in real-time</li>
+                    <li><strong>Volume Bar:</strong> Track sound intensity levels</li>
+                    <li><strong>Color Alerts:</strong> Different colors indicate sound levels
+                        <ul>
+                            <li>🟢 Green: Quiet (0-30%)</li>
+                            <li>🟡 Yellow: Moderate (30-60%)</li>
+                            <li>🟠 Orange: Loud (60-85%)</li>
+                            <li>🔴 Red: Very Loud (85-100%)</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </main>
+
+        <footer>
+            <p>Beyond Binary Hackathon Project | KRASH</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
