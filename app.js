@@ -2,10 +2,14 @@
 let audioContext;
 let analyser;
 let microphone;
+let mediaStream;
 let dataArray;
 let bufferLength;
 let animationId;
 let isListening = false;
+
+// Constants
+const VOLUME_SCALE_FACTOR = 3; // Multiplier to make volume changes more visible
 
 // DOM elements
 const startBtn = document.getElementById('startBtn');
@@ -32,12 +36,12 @@ window.addEventListener('resize', resizeCanvas);
 startBtn.addEventListener('click', async () => {
     try {
         // Request microphone access
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         
         // Create audio context and analyser
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
         analyser = audioContext.createAnalyser();
-        microphone = audioContext.createMediaStreamSource(stream);
+        microphone = audioContext.createMediaStreamSource(mediaStream);
         
         analyser.fftSize = 2048;
         bufferLength = analyser.frequencyBinCount;
@@ -75,6 +79,11 @@ function stopListening() {
     
     if (microphone) {
         microphone.disconnect();
+    }
+    
+    // Stop all media stream tracks to release microphone
+    if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
     }
     
     if (audioContext) {
@@ -139,7 +148,7 @@ function visualize() {
         sum += value;
     }
     const average = sum / bufferLength;
-    const volumePercent = Math.min(100, (average / 128) * 100 * 3); // Scale for better visibility
+    const volumePercent = Math.min(100, (average / 128) * 100 * VOLUME_SCALE_FACTOR);
     
     // Update level bar
     levelFill.style.width = volumePercent + '%';
