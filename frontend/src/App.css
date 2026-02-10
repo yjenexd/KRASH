@@ -1,7 +1,8 @@
 .app {
   display: flex;
   min-height: 100vh;
-  background: linear-gradient(135deg, #0a0f1a 0%, #111827 50%, #0d1526 100%);
+  background: linear-gradient(135deg, var(--bg-app-start) 0%, var(--bg-app-mid) 50%, var(--bg-app-end) 100%);
+  transition: background 0.3s ease;
 }
 
 .main-content {

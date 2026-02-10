@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { apiGet, apiPost } from '../lib/api';
+import { useNotifications } from '../components/Notifications/NotificationContext';
+import { useSettings } from './useSettings';
 
 interface Detection {
   id: string;
@@ -12,6 +14,8 @@ export function useDetections() {
   const [detections, setDetections] = useState<Detection[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { notify } = useNotifications();
+  const { settings } = useSettings();
 
   // Fetch all detections
   const fetchDetections = async () => {
@@ -32,6 +36,12 @@ export function useDetections() {
     try {
       const newDetection = await apiPost('/detections', { soundName, soundColor });
       setDetections([newDetection, ...detections]);
+
+      // Fire notification if enabled
+      if (settings.notifications) {
+        notify(soundName);
+      }
+
       return newDetection;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to log detection');
