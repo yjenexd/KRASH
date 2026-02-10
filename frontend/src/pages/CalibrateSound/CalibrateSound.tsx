@@ -5,6 +5,7 @@ import { useAudioRecorder } from '../../hooks/useAudioRecorder';
 import { useSounds } from '../../hooks/useSounds';
 import { useDetections } from '../../hooks/useDetections';
 import { formatTime } from '../../utils/audioUtils';
+import { extractSignatureFromBlob } from '../../utils/audioSignature';
 import './CalibrateSound.css';
 
 const PRESET_COLORS = [
@@ -72,13 +73,22 @@ export default function CalibrateSound() {
     try {
       console.log('💾 Saving recording with label:', soundLabel, 'color:', selectedColor);
       
+      // Extract audio signature from the recording
+      console.log('🔬 Extracting audio signature...');
+      const signature = await extractSignatureFromBlob(recordedBlob);
+      console.log('✅ Signature extracted:', {
+        mfccMean: signature.mfccMean.slice(0, 3).map(v => v.toFixed(2)),
+        rms: signature.rms.toFixed(4),
+        zcr: signature.zcr.toFixed(4),
+      });
+
       // Save audio file to backend
       await saveAudio(recordedBlob, `${soundLabel}.wav`);
       console.log('✅ Audio uploaded to backend');
 
-      // Add sound to library
-      await addSound(soundLabel, selectedColor);
-      console.log('✅ Sound added to library');
+      // Add sound to library WITH signature
+      await addSound(soundLabel, selectedColor, signature);
+      console.log('✅ Sound added to library with signature');
 
       // Log detection
       await logDetection(soundLabel, selectedColor);

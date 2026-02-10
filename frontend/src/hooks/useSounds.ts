@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { apiGet, apiPost, apiDelete } from '../lib/api';
+import { apiGet, apiPost, apiPut, apiDelete } from '../lib/api';
+import type { AudioSignature } from '../utils/audioSignature';
 
-interface Sound {
+export interface Sound {
   id: string;
   name: string;
   color: string;
   createdAt: string;
+  signature?: AudioSignature;
 }
 
 export function useSounds() {
@@ -27,14 +29,26 @@ export function useSounds() {
     }
   };
 
-  // Add new sound
-  const addSound = async (name: string, color: string) => {
+  // Add new sound (optionally with signature)
+  const addSound = async (name: string, color: string, signature?: AudioSignature) => {
     try {
-      const newSound = await apiPost('/sounds', { name, color });
+      const newSound = await apiPost('/sounds', { name, color, signature });
       setSounds([...sounds, newSound]);
       return newSound;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add sound');
+      throw err;
+    }
+  };
+
+  // Update a sound's signature
+  const updateSignature = async (id: string, signature: AudioSignature) => {
+    try {
+      const updated = await apiPut(`/sounds/${id}/signature`, { signature });
+      setSounds(sounds.map(s => (s.id === id ? updated : s)));
+      return updated;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update signature');
       throw err;
     }
   };
@@ -55,5 +69,5 @@ export function useSounds() {
     fetchSounds();
   }, []);
 
-  return { sounds, loading, error, fetchSounds, addSound, deleteSound };
+  return { sounds, loading, error, fetchSounds, addSound, updateSignature, deleteSound };
 }

@@ -44,7 +44,7 @@ router.get('/sounds', async (req, res) => {
 // POST /api/sounds
 router.post('/sounds', async (req, res) => {
   try {
-    const { name, color } = req.body;
+    const { name, color, signature } = req.body;
     
     if (!name || !color) {
       return res.status(400).json({ error: 'Name and color are required' });
@@ -56,12 +56,38 @@ router.post('/sounds', async (req, res) => {
       name,
       color,
       createdAt: new Date().toISOString(),
+      ...(signature ? { signature } : {}),
     };
 
     sounds.push(newSound);
     await writeSounds(sounds);
 
     res.status(201).json(newSound);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// PUT /api/sounds/:id/signature - Update a sound's audio signature
+router.put('/sounds/:id/signature', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { signature } = req.body;
+
+    if (!signature) {
+      return res.status(400).json({ error: 'Signature is required' });
+    }
+
+    const sounds = await readSounds();
+    const idx = sounds.findIndex(s => s.id === id);
+    if (idx === -1) {
+      return res.status(404).json({ error: 'Sound not found' });
+    }
+
+    sounds[idx].signature = signature;
+    await writeSounds(sounds);
+
+    res.json(sounds[idx]);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
