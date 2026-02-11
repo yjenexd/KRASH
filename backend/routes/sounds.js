@@ -1,41 +1,15 @@
 import express from 'express';
-import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import pool from '../db.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const router = express.Router();
-const dataDir = path.join(__dirname, '..', 'data');
-
-// Ensure data directory exists
-await fs.mkdir(dataDir, { recursive: true });
-
-const soundsFile = path.join(dataDir, 'sounds.json');
-
-// Initialize sounds file if it doesn't exist
-async function ensureSoundsFile() {
-  try {
-    await fs.access(soundsFile);
-  } catch {
-    await fs.writeFile(soundsFile, JSON.stringify([], null, 2));
-  }
-}
-
-async function readSounds() {
-  await ensureSoundsFile();
-  const data = await fs.readFile(soundsFile, 'utf-8');
-  return JSON.parse(data);
-}
-
-async function writeSounds(sounds) {
-  await fs.writeFile(soundsFile, JSON.stringify(sounds, null, 2));
-}
 
 // GET /api/sounds
 router.get('/sounds', async (req, res) => {
   try {
-    const sounds = await readSounds();
-    res.json(sounds);
+    const result = await pool.query(
+      'SELECT id, name, color, signature, created_at AS "createdAt" FROM sounds ORDER BY created_at ASC'
+    );
+    res.json(result.rows);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -45,24 +19,18 @@ router.get('/sounds', async (req, res) => {
 router.post('/sounds', async (req, res) => {
   try {
     const { name, color, signature } = req.body;
-    
+
     if (!name || !color) {
       return res.status(400).json({ error: 'Name and color are required' });
     }
 
-    const sounds = await readSounds();
-    const newSound = {
-      id: Date.now().toString(),
-      name,
-      color,
-      createdAt: new Date().toISOString(),
-      ...(signature ? { signature } : {}),
-    };
+    const id = Date.now().toString();
+    const result = await pool.query(
+      'INSERT INTO sounds (id, name, color, signature) VALUES ($1, $2, $3, $4) RETURNING id, name, color, signature, created_at AS "createdAt"',
+      [id, name, color, signature ? JSON.stringify(signature) : null]
+    );
 
-    sounds.push(newSound);
-    await writeSounds(sounds);
-
-    res.status(201).json(newSound);
+    res.status(201).json(result.rows[0]);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -78,16 +46,16 @@ router.put('/sounds/:id/signature', async (req, res) => {
       return res.status(400).json({ error: 'Signature is required' });
     }
 
-    const sounds = await readSounds();
-    const idx = sounds.findIndex(s => s.id === id);
-    if (idx === -1) {
+    const result = await pool.query(
+      'UPDATE sounds SET signature = $1 WHERE id = $2 RETURNING id, name, color, signature, created_at AS "createdAt"',
+      [JSON.stringify(signature), id]
+    );
+
+    if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Sound not found' });
     }
 
-    sounds[idx].signature = signature;
-    await writeSounds(sounds);
-
-    res.json(sounds[idx]);
+    res.json(result.rows[0]);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -97,9 +65,7 @@ router.put('/sounds/:id/signature', async (req, res) => {
 router.delete('/sounds/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const sounds = await readSounds();
-    const filtered = sounds.filter(s => s.id !== id);
-    await writeSounds(filtered);
+    await pool.query('DELETE FROM sounds WHERE id = $1', [id]);
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: error.message });
